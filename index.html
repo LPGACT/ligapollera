@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
   <style>
     /* ============================================================
@@ -550,6 +551,124 @@
        RESPONSIVE
     ============================================================ */
     /* ============================================================
+       DELTA DE POSICIÓN
+    ============================================================ */
+    .pos-cell-inner {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 1px;
+    }
+    .delta-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 9px; font-weight: 900; line-height: 1;
+      letter-spacing: .3px;
+    }
+    .d-up   { color: #22c55e; }
+    .d-down { color: #ef4444; }
+    .d-neu  { color: var(--txt-muted); opacity: .35; }
+
+    /* Flash de fila cuando sube/baja */
+    @keyframes flashUp {
+      0%   { background: rgba(34,197,94,.22) !important; }
+      100% { }
+    }
+    @keyframes flashDown {
+      0%   { background: rgba(239,68,68,.18) !important; }
+      100% { }
+    }
+    .row-up   { animation: flashUp   1.6s ease both; }
+    .row-down { animation: flashDown 1.6s ease both; }
+
+    /* Glow pulsante para el líder (#1) */
+    @keyframes leaderPulse {
+      0%,100% { box-shadow: inset 0 0 0 1px rgba(245,158,11,.0); }
+      50%     { box-shadow: inset 0 0 0 1px rgba(245,158,11,.55),
+                            0 0 28px rgba(245,158,11,.12); }
+    }
+    .leader-row { animation: leaderPulse 1.8s ease 4; }
+
+    /* ============================================================
+       PODIO DE COMISIONES
+    ============================================================ */
+    .podium-wrap {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 6px;
+      padding: 28px 20px 0;
+      margin-bottom: 16px;
+    }
+    .podium-place {
+      flex: 1; max-width: 220px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both;
+    }
+    .p-second { animation-delay: .1s; }
+    .p-first  { animation-delay: .0s; }
+    .p-third  { animation-delay: .2s; }
+
+    .podium-crown {
+      font-size: 18px; line-height: 1;
+      opacity: 0; transition: opacity .3s;
+    }
+    .p-first .podium-crown { opacity: 1; }
+
+    .podium-emoji-wrap {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      border: 2px solid transparent;
+      position: relative;
+    }
+    .p-first  .podium-emoji-wrap { width:64px;height:64px;font-size:30px; }
+
+    .podium-info { text-align: center; }
+    .podium-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .5px;
+      color: var(--txt); line-height: 1.1;
+    }
+    .p-first .podium-name { font-size: 14px; }
+    .podium-avg {
+      font-size: 10px; color: var(--txt-muted);
+      margin-top: 2px;
+    }
+
+    .podium-stand {
+      width: 100%;
+      border-radius: 6px 6px 0 0;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    /* Brillo interior */
+    .podium-stand::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 6px 6px 0 0;
+    }
+    .podium-pos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 32px; font-weight: 900; line-height: 1;
+      padding: 10px 0;
+    }
+
+    .p-first  .podium-stand { height: 96px;  background: rgba(245,158,11,.12); }
+    .p-second .podium-stand { height: 68px;  background: rgba(148,163,184,.1); }
+    .p-third  .podium-stand { height: 50px;  background: rgba(205,127,50,.1); }
+    .p-first  .podium-stand::after { background: var(--gold); }
+    .p-second .podium-stand::after { background: var(--silver); }
+    .p-third  .podium-stand::after { background: var(--bronze); }
+    .p-first  .podium-pos { color: var(--gold); }
+    .p-second .podium-pos { color: var(--silver); }
+    .p-third  .podium-pos { color: var(--bronze); }
+    .p-first  .podium-emoji-wrap { border-color: rgba(245,158,11,.4); box-shadow: 0 0 20px rgba(245,158,11,.15); }
+    .p-second .podium-emoji-wrap { border-color: rgba(148,163,184,.3); }
+    .p-third  .podium-emoji-wrap { border-color: rgba(205,127,50,.3); }
+
+    /* ============================================================
        TABS
     ============================================================ */
     .tab-nav {
@@ -904,8 +1023,22 @@ const COMISIONES = [
   }
 ];
 
-let refreshTimer = null;
-let isLoading    = false;
+let refreshTimer   = null;
+let isLoading      = false;
+let prevRankMap    = {};   // nombre → posición anterior (general)
+let prevCommRank   = {};   // id     → posición anterior (comisiones)
+let confettiFired  = false;
+
+/* ================================================================
+   CONFETTI
+================================================================ */
+function shootConfetti(colors) {
+  const c = colors || ['#22c55e','#f59e0b','#ffffff','#3b82f6','#a855f7'];
+  const base = { spread: 75, origin: { y: 0.58 }, colors: c, zIndex: 9999 };
+  confetti({ ...base, particleCount: 110 });
+  setTimeout(() => confetti({ ...base, particleCount: 55, origin: { y: 0.52, x: 0.28 } }), 220);
+  setTimeout(() => confetti({ ...base, particleCount: 55, origin: { y: 0.52, x: 0.72 } }), 400);
+}
 
 /* ================================================================
    TAB SWITCH
@@ -986,12 +1119,27 @@ function renderRows(players) {
   let html    = '';
   let prevZ   = null;
 
-  players.forEach((p, i) => {
-    const pos = i + 1;
-    const z   = zone(pos, total);
-    const del = Math.min(i * 38, 600);
+  /* Calcular nuevo mapa de posiciones y deltas */
+  const newRankMap = {};
+  players.forEach((p, i) => { newRankMap[p.nombre] = i + 1; });
 
-    /* Separador al cambiar de zona */
+  players.forEach((p, i) => {
+    const pos   = i + 1;
+    const z     = zone(pos, total);
+    const del   = Math.min(i * 38, 600);
+
+    /* Delta de posición */
+    const prev  = prevRankMap[p.nombre];
+    const delta = prev !== undefined ? prev - pos : null;
+    let deltaHtml = '';
+    if      (delta === null || delta === 0) deltaHtml = `<span class="delta-badge d-neu">—</span>`;
+    else if (delta > 0)  deltaHtml = `<span class="delta-badge d-up">↑${delta}</span>`;
+    else                 deltaHtml = `<span class="delta-badge d-down">↓${Math.abs(delta)}</span>`;
+
+    const moveClass = delta > 0 ? 'row-up' : delta < 0 ? 'row-down' : '';
+    const ldClass   = pos === 1 ? 'leader-row' : '';
+
+    /* Separador de zona */
     if (prevZ !== null && z !== prevZ) {
       if      (z === 'sud')  html += sep('var(--sud)',  'Copa Sudamericana', icoSud(13));
       else if (z === 'rep')  html += sep('var(--rep)',  'Repechaje',         '');
@@ -999,14 +1147,12 @@ function renderRows(players) {
     }
     prevZ = z;
 
-    /* Posición */
     const posHtml =
       pos === 1 ? `<span class="pos-badge pos-1">1</span>` :
       pos === 2 ? `<span class="pos-badge pos-2">2</span>` :
       pos === 3 ? `<span class="pos-badge pos-3">3</span>` :
                   `<span class="pos-n">${pos}</span>`;
 
-    /* Badge de zona */
     const badgeMap = {
       lib:  `<span class="p-badge b-lib">${icoLib(9)} Libertadores</span>`,
       sud:  `<span class="p-badge b-sud">${icoSud(9)} Sudamericana</span>`,
@@ -1014,7 +1160,6 @@ function renderRows(players) {
       desc: `<span class="p-badge b-desc">Descenso</span>`,
     };
 
-    /* Logo copa a la derecha */
     const rightIco =
       z === 'lib' ? `<span class="z-icon">${icoLib(20)}</span>` :
       z === 'sud' ? `<span class="z-icon">${icoSud(20)}</span>` : '';
@@ -1022,8 +1167,13 @@ function renderRows(players) {
     const [bg, fg] = avatarColors(p.nombre);
 
     html += `
-      <div class="data-row z-${z}" style="animation-delay:${del}ms" role="row">
-        <div class="cell-pos">${posHtml}</div>
+      <div class="data-row z-${z} ${moveClass} ${ldClass}" style="animation-delay:${del}ms" role="row">
+        <div class="cell-pos">
+          <div class="pos-cell-inner">
+            ${posHtml}
+            ${deltaHtml}
+          </div>
+        </div>
         <div class="cell-player">
           <div class="avatar" style="background:linear-gradient(150deg,${bg},${fg}60);border-color:${fg}28;">
             ${initials(p.nombre)}
@@ -1040,6 +1190,7 @@ function renderRows(players) {
       </div>`;
   });
 
+  prevRankMap = newRankMap;
   return html;
 }
 
@@ -1095,6 +1246,38 @@ function showEmpty() {
 }
 
 /* ================================================================
+   PODIO
+================================================================ */
+function renderPodium(comData) {
+  if (comData.length < 3) return '';
+  const fmt = n => n % 1 === 0 ? n.toFixed(0) : n.toFixed(2);
+
+  // Layout podio: 2° | 1° | 3°
+  const slots = [
+    { d: comData[1], cls: 'p-second', pos: '2' },
+    { d: comData[0], cls: 'p-first',  pos: '1' },
+    { d: comData[2], cls: 'p-third',  pos: '3' },
+  ];
+
+  const items = slots.map(({ d, cls, pos }) => `
+    <div class="podium-place ${cls}">
+      <div class="podium-crown">👑</div>
+      <div class="podium-emoji-wrap" style="background:${d.color}18;border-color:${d.color}45">
+        ${d.emoji}
+      </div>
+      <div class="podium-info">
+        <div class="podium-name">${d.nombre}</div>
+        <div class="podium-avg">${fmt(d.promedio)} 🐔/persona</div>
+      </div>
+      <div class="podium-stand">
+        <span class="podium-pos">${pos}</span>
+      </div>
+    </div>`).join('');
+
+  return `<div class="podium-wrap">${items}</div>`;
+}
+
+/* ================================================================
    COMISIONES — render
 ================================================================ */
 function renderComisiones(players) {
@@ -1143,9 +1326,17 @@ function renderComisiones(players) {
       </div>`;
   }).join('');
 
+  /* Delta de comisiones */
+  const newCommRank = {};
+  comData.forEach((c, i) => { newCommRank[c.id] = i + 1; });
+
+  /* Podio */
+  const podiumHtml = renderPodium(comData);
+
   document.getElementById('commRanking').innerHTML = `
     <p class="comm-section-title">Ranking por Comisión</p>
     <div class="card" style="margin-bottom:14px">
+      ${podiumHtml}
       <div class="topbar">
         <div class="topbar-left">
           <span class="tb-emoji">🏆</span>
@@ -1157,6 +1348,8 @@ function renderComisiones(players) {
       </div>
       ${rankRows}
     </div>`;
+
+  prevCommRank = newCommRank;
 
   // ── Cards individuales ──
   const cardsHtml = comData.map(com => renderCommCard(com)).join('');
@@ -1259,6 +1452,12 @@ async function loadData() {
       document.getElementById('countPill').textContent = `${players.length} misionero${players.length !== 1 ? 's' : ''}`;
       document.getElementById('updateTxt').textContent  = `Actualizado: ${fmtTime(new Date())}`;
       renderComisiones(players);
+
+      /* Confetti: una sola vez al primer load exitoso */
+      if (!confettiFired) {
+        setTimeout(() => shootConfetti(), 700);
+        confettiFired = true;
+      }
     }
 
   } catch (err) {
