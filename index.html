@@ -244,56 +244,50 @@
     }
 
     /* ============================================================
-       TABLA — GRID BASE
-       Col: [pos 40px] [delta 22px] [jugador flex] [pts 108px]
+       TABLA — GRID 3 COLS estilo Promiedos
+       [pos 46px] [jugador 1fr] [pts 88px]
     ============================================================ */
-    .grid-cols {
-      grid-template-columns: 40px 22px minmax(0,1fr) 108px;
+    .col-head,
+    .data-row {
+      display: grid;
+      grid-template-columns: 46px minmax(0,1fr) 88px;
     }
 
-    /* Column headers */
+    /* ── Column headers ── */
     .col-head {
-      display: grid;
-      grid-template-columns: 40px 22px minmax(0,1fr) 108px;
-      padding: 0 18px 0 12px;
-      height: 34px;
+      height: 32px;
       align-items: center;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-colhead);
+      padding: 0 14px 0 0;
+      border-bottom: 2px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.3);
     }
     .ch {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1.4px;
+      letter-spacing: 1.6px;
       text-transform: uppercase;
       color: var(--txt-muted);
     }
     .ch-c { text-align: center; }
-    .ch-r { text-align: right; }
+    .ch-r { text-align: right; padding-right: 2px; }
 
-    /* ============================================================
-       ROWS  — estilo Promiedos compacto
-    ============================================================ */
+    /* ── Rows ── */
     .data-row {
       position: relative;
-      display: grid;
-      grid-template-columns: 40px 22px minmax(0,1fr) 108px;
       align-items: center;
-      height: 50px;
-      padding: 0 18px 0 0;         /* sin padding left — la zona bar lo ocupa */
+      height: 46px;
+      padding: 0 14px 0 0;
       border-bottom: 1px solid var(--border-row);
-      transition: background .15s ease;
+      transition: background .13s ease;
       cursor: default;
     }
     .data-row:last-child { border-bottom: none; }
 
-    /* Franjas alternas — solo en filas sin zona (none) */
-    .data-row.z-none:nth-child(even) {
-      background: rgba(255,255,255,.018);
-    }
+    /* Franjas alternas en zona neutra */
+    .data-row.z-none:nth-child(even) { background: rgba(255,255,255,.016); }
 
-    /* ── Barra lateral de zona, flush con el row ── */
+    /* Barra lateral flush — como Promiedos */
     .data-row::before {
       content: '';
       position: absolute;
@@ -301,90 +295,64 @@
       width: 4px;
     }
 
-    /* Zone variants */
-    .z-lib  { background: var(--lib-dim); }
-    .z-lib::before  { background: var(--lib); }
-    .z-sud  { background: var(--sud-dim); }
-    .z-sud::before  { background: var(--sud); }
-    .z-rep  { background: var(--rep-dim); }
-    .z-rep::before  { background: var(--rep); }
-    .z-desc { background: var(--desc-dim); }
-    .z-desc::before { background: var(--desc); }
+    /* Zonas */
+    .z-lib  { background: var(--lib-dim); }  .z-lib::before  { background: var(--lib); }
+    .z-sud  { background: var(--sud-dim); }  .z-sud::before  { background: var(--sud); }
+    .z-rep  { background: var(--rep-dim); }  .z-rep::before  { background: var(--rep); }
+    .z-desc { background: var(--desc-dim); } .z-desc::before { background: var(--desc); }
     .z-none::before { background: transparent; }
 
-    /* Hover — sobreescribe todo */
-    .data-row:hover { background: rgba(255,255,255,.05) !important; }
+    .data-row:hover { background: rgba(255,255,255,.048) !important; }
 
-    /* ── Columna posición ── */
+    /* ── POSICIÓN ── */
     .cell-pos {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-left: 8px;            /* compensar la barra de zona */
+      padding-left: 6px; /* empuja el nro claro de la barra */
     }
     .pos-n {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--txt-muted);
       line-height: 1;
+      width: 24px;
       text-align: center;
-      width: 22px;
     }
-    /* Top 3: badge de color en lugar de emoji */
+    /* Top 3 con badge color */
     .pos-badge {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px; height: 22px;
-      border-radius: 4px;
+      width: 26px; height: 20px;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 14px;
-      font-weight: 900;
-      line-height: 1;
+      font-size: 13px; font-weight: 900; line-height: 1;
     }
-    .pos-1 { background: rgba(245,158,11,.18); color: var(--gold); }
-    .pos-2 { background: rgba(148,163,184,.14); color: var(--silver); }
-    .pos-3 { background: rgba(205,127,50,.14);  color: var(--bronze); }
+    .pos-1 { background: rgba(245,158,11,.2);  color: var(--gold); }
+    .pos-2 { background: rgba(148,163,184,.15); color: var(--silver); }
+    .pos-3 { background: rgba(205,127,50,.15);  color: var(--bronze); }
 
-    /* ── Columna delta (variación) ── */
-    .cell-delta {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .delta {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--txt-muted);
-      opacity: .45;
-    }
-
-    /* ── Columna jugador ── */
+    /* ── JUGADOR ── */
     .cell-player {
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-width: 0;
+      gap: 9px;
+      min-width: 0;         /* clave: permite que el nombre haga ellipsis */
+      padding-left: 2px;
     }
-    /* Crest — cuadrado redondeado estilo escudo */
+    /* Escudo cuadrado — estilo Promiedos */
     .avatar {
       flex-shrink: 0;
-      width: 30px; height: 30px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .3px;
+      font-size: 10px; font-weight: 900;
       color: rgba(255,255,255,.95);
-      border: 1px solid rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.08);
     }
-    .p-info { min-width: 0; flex: 1; }
-    /* Nombre en uppercase condensed — idéntico a Promiedos */
+    .p-info { min-width: 0; flex: 1; overflow: hidden; }
+    /* Nombre: Barlow Condensed como Promiedos, mixed-case legible */
     .p-name {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 15px;
@@ -393,91 +361,69 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: .4px;
-      text-transform: uppercase;
-      line-height: 1.1;
+      letter-spacing: .3px;
+      line-height: 1.15;
+      display: block;
     }
+    /* Badge de zona debajo del nombre */
     .p-badge {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      margin-top: 2px;
-      font-family: 'Inter', sans-serif;
-      font-size: 9px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 9.5px;
       font-weight: 700;
-      letter-spacing: .6px;
+      letter-spacing: .8px;
       text-transform: uppercase;
-      padding: 1px 6px;
-      border-radius: 100px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-top: 1px;
     }
-    .b-lib  { background: rgba(34,197,94,.12);  color: var(--lib);  border: 1px solid rgba(34,197,94,.2); }
-    .b-sud  { background: rgba(59,130,246,.12);  color: var(--sud);  border: 1px solid rgba(59,130,246,.2); }
-    .b-rep  { background: rgba(168,85,247,.12);  color: var(--rep);  border: 1px solid rgba(168,85,247,.2); }
-    .b-desc { background: rgba(239,68,68,.12);   color: var(--desc); border: 1px solid rgba(239,68,68,.2); }
+    .b-lib  { background: rgba(34,197,94,.13);  color: var(--lib);  border: 1px solid rgba(34,197,94,.22); }
+    .b-sud  { background: rgba(59,130,246,.13);  color: var(--sud);  border: 1px solid rgba(59,130,246,.22); }
+    .b-rep  { background: rgba(168,85,247,.13);  color: var(--rep);  border: 1px solid rgba(168,85,247,.22); }
+    .b-desc { background: rgba(239,68,68,.13);   color: var(--desc); border: 1px solid rgba(239,68,68,.22); }
 
-    /* ── Columna puntos ── */
+    /* ── PUNTOS ── */
     .cell-pts {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 7px;
+      gap: 6px;
+      padding-right: 2px;
     }
-    .z-icon { flex-shrink: 0; display: flex; align-items: center; }
-    .pts-wrap { text-align: right; }
-    /* Número grande tipo "Pts" de Promiedos */
+    .z-icon { flex-shrink: 0; display: flex; }
     .pts-n {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 900;
       line-height: 1;
       color: var(--txt);
-      letter-spacing: -.5px;
-    }
-    .pts-u {
-      font-size: 8.5px;
-      font-weight: 700;
-      color: var(--txt-muted);
-      letter-spacing: .6px;
-      text-transform: uppercase;
-      display: block;
-      text-align: right;
+      letter-spacing: -.3px;
     }
 
     /* ============================================================
-       ZONE SEPARATORS — estilo Promiedos: línea fina con label
+       SEPARADORES DE ZONA — idéntico a Promiedos
     ============================================================ */
     .zone-sep {
       display: flex;
-      align-items: center;
-      gap: 0;
-      height: 28px;
-      padding: 0;
-      border-bottom: 1px solid var(--border);
+      align-items: stretch;
+      height: 26px;
       border-top: 1px solid var(--border);
-      background: rgba(0,0,0,.28);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.32);
       overflow: hidden;
     }
-    /* Barra izquierda de color — misma posición que el row */
-    .zone-sep::before {
-      content: '';
-      width: 4px;
-      align-self: stretch;
-      flex-shrink: 0;
-    }
+    .sep-bar   { width: 4px; flex-shrink: 0; }
     .sep-inner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 14px;
-      flex: 1;
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 12px; flex: 1;
     }
-    .sep-line { flex: 1; height: 1px; opacity: .18; }
+    .sep-line  { flex: 1; height: 1px; opacity: .15; }
     .sep-label {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 1.8px; text-transform: uppercase;
       white-space: nowrap;
     }
     .sep-ico { display: flex; align-items: center; }
@@ -603,29 +549,30 @@
     /* ============================================================
        RESPONSIVE
     ============================================================ */
-    @media (max-width:700px) {
-      .page { padding:20px 12px 52px; }
-      .legend { grid-template-columns:repeat(2,1fr); }
+    @media (max-width:640px) {
+      .page { padding: 16px 10px 48px; }
+      .legend { grid-template-columns: repeat(2,1fr); gap: 8px; }
       .col-head, .data-row {
-        grid-template-columns: 36px 18px minmax(0,1fr) 88px;
-        padding-right: 12px;
-      }
-      .p-badge { display:none; }
-    }
-    @media (max-width:440px) {
-      .col-head, .data-row {
-        grid-template-columns: 34px 0px minmax(0,1fr) 78px;
+        grid-template-columns: 40px minmax(0,1fr) 72px;
         padding-right: 10px;
       }
-      .cell-delta { display:none; }
-      .avatar  { width:26px; height:26px; font-size:10px; border-radius:5px; }
-      .p-name  { font-size:13px; }
-      .pts-n   { font-size:20px; }
-      .pts-u   { display:none; }
-      .z-icon  { display:none; }
-      .legend  { gap:7px; }
-      .leg-card{ padding:10px 11px; gap:8px; }
-      .leg-logo{ width:24px; height:24px; object-fit:contain; }
+      .data-row { height: 44px; }
+      .p-badge  { display: none; }
+      .z-icon   { display: none; }
+      .pts-n    { font-size: 19px; }
+      .p-name   { font-size: 14px; }
+    }
+    @media (max-width:380px) {
+      .col-head, .data-row {
+        grid-template-columns: 36px minmax(0,1fr) 64px;
+        padding-right: 8px;
+      }
+      .avatar  { width: 24px; height: 24px; font-size: 9px; }
+      .p-name  { font-size: 13px; }
+      .pts-n   { font-size: 17px; }
+      .cell-player { gap: 7px; }
+      .leg-card{ padding: 9px 10px; }
+      .leg-logo{ width: 22px; height: 22px; }
     }
   </style>
 </head>
@@ -677,9 +624,8 @@
 
     <div class="col-head">
       <div class="ch ch-c">#</div>
-      <div class="ch"></div>
-      <div class="ch">Jugador</div>
-      <div class="ch ch-r">🐔 &nbsp;Pts</div>
+      <div class="ch" style="padding-left:8px">Jugador</div>
+      <div class="ch ch-r">🐔 Pts</div>
     </div>
 
     <div id="tableBody"></div>
@@ -804,60 +750,53 @@ function renderRows(players) {
   players.forEach((p, i) => {
     const pos = i + 1;
     const z   = zone(pos, total);
-    const del = Math.min(i * 42, 650);
+    const del = Math.min(i * 38, 600);
 
-    /* Zone separator when zone changes */
+    /* Separador al cambiar de zona */
     if (prevZ !== null && z !== prevZ) {
-      if      (z === 'sud')  html += sep('var(--sud)',  'var(--sud)',  'Copa Sudamericana', icoSud(13));
-      else if (z === 'rep')  html += sep('var(--rep)',  'var(--rep)',  'Repechaje',          '');
-      else if (z === 'desc') html += sep('var(--desc)', 'var(--desc)', 'Zona de Descenso',   '');
+      if      (z === 'sud')  html += sep('var(--sud)',  'Copa Sudamericana', icoSud(13));
+      else if (z === 'rep')  html += sep('var(--rep)',  'Repechaje',         '');
+      else if (z === 'desc') html += sep('var(--desc)', 'Descenso',          '');
     }
     prevZ = z;
 
-    /* Position — top 3 con badge de color, resto número */
-    let posHtml;
-    if      (pos === 1) posHtml = `<span class="pos-badge pos-1">1</span>`;
-    else if (pos === 2) posHtml = `<span class="pos-badge pos-2">2</span>`;
-    else if (pos === 3) posHtml = `<span class="pos-badge pos-3">3</span>`;
-    else                posHtml = `<span class="pos-n">${pos}</span>`;
+    /* Posición */
+    const posHtml =
+      pos === 1 ? `<span class="pos-badge pos-1">1</span>` :
+      pos === 2 ? `<span class="pos-badge pos-2">2</span>` :
+      pos === 3 ? `<span class="pos-badge pos-3">3</span>` :
+                  `<span class="pos-n">${pos}</span>`;
 
-    /* Zone badge debajo del nombre */
+    /* Badge de zona */
     const badgeMap = {
       lib:  `<span class="p-badge b-lib">${icoLib(9)} Libertadores</span>`,
       sud:  `<span class="p-badge b-sud">${icoSud(9)} Sudamericana</span>`,
       rep:  `<span class="p-badge b-rep">Repechaje</span>`,
       desc: `<span class="p-badge b-desc">Descenso</span>`,
     };
-    const badgeHtml = badgeMap[z] || '';
 
-    /* Icono de copa a la derecha del puntaje */
-    const rightIco = z === 'lib'
-      ? `<span class="z-icon">${icoLib(22)}</span>`
-      : z === 'sud'
-      ? `<span class="z-icon">${icoSud(22)}</span>`
-      : '';
+    /* Logo copa a la derecha */
+    const rightIco =
+      z === 'lib' ? `<span class="z-icon">${icoLib(20)}</span>` :
+      z === 'sud' ? `<span class="z-icon">${icoSud(20)}</span>` : '';
 
     const [bg, fg] = avatarColors(p.nombre);
 
     html += `
-      <div class="data-row z-${z}" style="animation-delay:${del}ms" role="row" aria-label="${p.nombre} – ${p.pollos} pollos">
+      <div class="data-row z-${z}" style="animation-delay:${del}ms" role="row">
         <div class="cell-pos">${posHtml}</div>
-        <div class="cell-delta"><span class="delta">—</span></div>
         <div class="cell-player">
-          <div class="avatar" style="background:linear-gradient(160deg,${bg} 0%,${fg}55 100%);border-color:${fg}25;">
+          <div class="avatar" style="background:linear-gradient(150deg,${bg},${fg}60);border-color:${fg}28;">
             ${initials(p.nombre)}
           </div>
           <div class="p-info">
-            <div class="p-name" title="${p.nombre}">${escHtml(p.nombre)}</div>
-            ${badgeHtml}
+            <span class="p-name" title="${p.nombre}">${escHtml(p.nombre)}</span>
+            ${badgeMap[z] || ''}
           </div>
         </div>
         <div class="cell-pts">
           ${rightIco}
-          <div class="pts-wrap">
-            <span class="pts-n">${fmtNum(p.pollos)}</span>
-            <span class="pts-u">pollos</span>
-          </div>
+          <span class="pts-n">${fmtNum(p.pollos)}</span>
         </div>
       </div>`;
   });
@@ -865,15 +804,15 @@ function renderRows(players) {
   return html;
 }
 
-function sep(barColor, labelColor, label, iconHtml) {
+function sep(color, label, iconHtml) {
   return `
-    <div class="zone-sep" style="--sep-bar:${barColor}">
-      <div style="width:4px;align-self:stretch;background:${barColor};flex-shrink:0"></div>
+    <div class="zone-sep">
+      <div class="sep-bar" style="background:${color}"></div>
       <div class="sep-inner">
-        <div class="sep-line" style="background:${labelColor}"></div>
+        <div class="sep-line" style="background:${color}"></div>
         ${iconHtml ? `<span class="sep-ico">${iconHtml}</span>` : ''}
-        <span class="sep-label" style="color:${labelColor}">${label}</span>
-        <div class="sep-line" style="background:${labelColor}"></div>
+        <span class="sep-label" style="color:${color}">${label}</span>
+        <div class="sep-line" style="background:${color}"></div>
       </div>
     </div>`;
 }
