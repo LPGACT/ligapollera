@@ -549,6 +549,151 @@
     /* ============================================================
        RESPONSIVE
     ============================================================ */
+    /* ============================================================
+       TABS
+    ============================================================ */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 22px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 4px;
+      animation: fadeDown .5s ease both;
+    }
+    .tab-btn {
+      flex: 1;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: .8px; text-transform: uppercase;
+      color: var(--txt-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .tab-btn.active {
+      background: rgba(34,197,94,.12);
+      color: var(--lib);
+      border-color: rgba(34,197,94,.22);
+    }
+    .tab-btn:not(.active):hover {
+      color: var(--txt);
+      background: rgba(255,255,255,.04);
+    }
+
+    /* ============================================================
+       COMMISSION RANKING
+    ============================================================ */
+    .comm-section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--txt-muted);
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+    .comm-rank-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border-row);
+      transition: background .13s ease;
+      cursor: default;
+    }
+    .comm-rank-row:last-child { border-bottom: none; }
+    .comm-rank-row:hover { background: rgba(255,255,255,.04); }
+    .crr-pos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px; font-weight: 800;
+      color: var(--txt-muted);
+      width: 26px; text-align: center; flex-shrink: 0;
+    }
+    .crr-info { flex: 1; min-width: 0; }
+    .crr-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--txt); text-transform: uppercase;
+      letter-spacing: .4px; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .crr-bar-wrap {
+      height: 5px;
+      background: rgba(255,255,255,.06);
+      border-radius: 3px; overflow: hidden;
+    }
+    .crr-bar {
+      height: 100%; border-radius: 3px;
+      transition: width .8s cubic-bezier(.22,1,.36,1);
+    }
+    .crr-pts {
+      text-align: right; flex-shrink: 0;
+    }
+    .crr-n {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px; font-weight: 900;
+      line-height: 1; display: block;
+    }
+    .crr-u {
+      font-size: 9px; font-weight: 600;
+      color: var(--txt-muted); text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .crr-members {
+      font-size: 10px; color: var(--txt-muted);
+      margin-top: 1px;
+    }
+
+    /* ============================================================
+       COMMISSION CARDS
+    ============================================================ */
+    .comm-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+    /* La card de Niños ocupa el ancho completo por tener más miembros */
+    .comm-card-full { grid-column: 1 / -1; }
+
+    .comm-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    .comm-card-head {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 16px;
+      background: rgba(0,0,0,.22);
+      border-bottom: 1px solid var(--border);
+      border-left: 4px solid transparent;
+    }
+    .comm-emoji { font-size: 20px; line-height: 1; }
+    .comm-card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .6px;
+      line-height: 1;
+    }
+    .comm-card-sub {
+      font-size: 10px; color: var(--txt-muted);
+      margin-top: 2px;
+    }
+    /* Filas dentro de comm cards: sin zone indicators */
+    .comm-card .data-row::before { background: transparent !important; }
+    .comm-card .data-row { height: 44px; background: transparent !important; }
+    .comm-card .data-row:hover { background: rgba(255,255,255,.04) !important; }
+    .comm-card .data-row.z-none:nth-child(even) { background: rgba(255,255,255,.016) !important; }
+
     @media (max-width:640px) {
       .page { padding: 16px 10px 48px; }
       .legend { grid-template-columns: repeat(2,1fr); gap: 8px; }
@@ -561,6 +706,10 @@
       .z-icon   { display: none; }
       .pts-n    { font-size: 19px; }
       .p-name   { font-size: 14px; }
+    }
+    @media (max-width:640px) {
+      .comm-grid { grid-template-columns: 1fr; gap: 10px; }
+      .comm-card-full { grid-column: 1; }
     }
     @media (max-width:380px) {
       .col-head, .data-row {
@@ -608,6 +757,21 @@
       </button>
     </div>
   </header>
+
+  <!-- ========== TABS ========== -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('general')">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="1" y="1" width="11" height="11" rx="2"/><path d="M1 5h11M5 5v7"/></svg>
+      General
+    </button>
+    <button class="tab-btn" onclick="switchTab('comisiones')">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="6.5" cy="4" r="2"/><path d="M1 12c0-3 2.5-4.5 5.5-4.5S12 9 12 12"/></svg>
+      Por Comisión
+    </button>
+  </nav>
+
+  <!-- ========== VISTA GENERAL ========== -->
+  <div id="view-general">
 
   <!-- ========== CARD ========== -->
   <div class="card" id="mainCard">
@@ -678,6 +842,17 @@
     Datos en tiempo real · Google Sheets &nbsp;·&nbsp; Auto-refresh cada 60&nbsp;s
   </footer>
 
+  </div><!-- /view-general -->
+
+  <!-- ========== VISTA COMISIONES ========== -->
+  <div id="view-comisiones" style="display:none">
+    <div id="commRanking"></div>
+    <div id="commCards"></div>
+    <footer class="footer" style="margin-top:24px">
+      Datos en tiempo real · Google Sheets &nbsp;·&nbsp; Auto-refresh cada 60&nbsp;s
+    </footer>
+  </div>
+
 </div><!-- /page -->
 
 <script>
@@ -686,8 +861,72 @@
 ================================================================ */
 const REFRESH_MS = 60_000;
 
+/* ================================================================
+   COMISIONES — miembros hardcodeados
+================================================================ */
+const COMISIONES = [
+  {
+    id: 'logistica', nombre: 'Logística', emoji: '🚛', color: '#f59e0b',
+    miembros: [
+      'Ignacio Marchisella','Tomas Vellacich','Lautaro Cucco','Facundo Garcia',
+      'Lucas Viglia','Mile Carbella','Felipe Morel','Malu Bisio',
+      'Pedro Freire','Fede Demiranda','Salva Amestoy','Coqui Dominguez'
+    ]
+  },
+  {
+    id: 'espiritualidad', nombre: 'Espiritualidad', emoji: '✨', color: '#a855f7',
+    miembros: ['Cande Alonso','Joaqui Godoy','Nico Perez Ladaga','Pili Muller']
+  },
+  {
+    id: 'comunicacion', nombre: 'Comunicación', emoji: '📡', color: '#3b82f6',
+    miembros: [
+      'Bauti Persa','Agus Dp','Agus Padial','Agustin Angeli','Agustina Pascual',
+      'Buscemi','Fami Amestoy','Guada Garcia','Oli Gelado','Ori Massey','Sofi Julia'
+    ]
+  },
+  {
+    id: 'visitas', nombre: 'Visitas', emoji: '🏠', color: '#10b981',
+    miembros: [
+      'Mica Marenco','Juana di Salvio','Nacho Dp','Rama Esposito','Tizi Martin',
+      'Bianca de Grazia','Fede Doti','Martu Sensini','Pau Chames',
+      'Santi Mollura','Sofi Smammo','Sofi Imbrogno','Fran Dinatale'
+    ]
+  },
+  {
+    id: 'ninos', nombre: 'Niños', emoji: '👶', color: '#ec4899', full: true,
+    miembros: [
+      'Azul Villan','Agus Smammo','Bauti Romeo','Belu Bonifacio','Vicky Bonini',
+      'Gusti Guida','Jana Godoy','Juani Julia','Maca Alonso','Mateo Cortes',
+      'Santi Gerpe','Santi Puras','Lucas Zuazo','Bauti Ramirez','Caro Storani',
+      'Mia Freire','Valen Marino','Mile Miot','Mateo Damico','Mili Wowzuck',
+      'Zoe Chiesa','Aylu Benmahor','Beni Buscaglia','Felipe Juan','Pau Serpa'
+    ]
+  }
+];
+
 let refreshTimer = null;
 let isLoading    = false;
+
+/* ================================================================
+   TAB SWITCH
+================================================================ */
+function switchTab(tab) {
+  const isComisiones = tab === 'comisiones';
+  document.getElementById('view-general').style.display    = isComisiones ? 'none'  : 'block';
+  document.getElementById('view-comisiones').style.display = isComisiones ? 'block' : 'none';
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === (isComisiones ? 1 : 0));
+  });
+}
+
+/* ================================================================
+   NAME NORMALIZATION — para matching case-insensitive + tildes
+================================================================ */
+function normalize(s) {
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ').trim();
+}
 
 /* ================================================================
    AVATAR
@@ -856,6 +1095,120 @@ function showEmpty() {
 }
 
 /* ================================================================
+   COMISIONES — render
+================================================================ */
+function renderComisiones(players) {
+  // Mapa por nombre normalizado
+  const pMap = new Map();
+  for (const p of players) pMap.set(normalize(p.nombre), p);
+
+  // Construir datos de cada comisión con totales
+  const comData = COMISIONES.map(com => {
+    const members = com.miembros.map(nombre => {
+      const match = pMap.get(normalize(nombre));
+      return { nombre, pollos: match ? match.pollos : 0 };
+    }).sort((a, b) => b.pollos - a.pollos);
+    const total = members.reduce((s, m) => s + m.pollos, 0);
+    return { ...com, members, total };
+  }).sort((a, b) => b.total - a.total);
+
+  const maxTotal = comData[0]?.total || 1;
+
+  // ── Ranking de comisiones ──
+  const rankRows = comData.map((com, i) => {
+    const pct = maxTotal > 0 ? Math.round((com.total / maxTotal) * 100) : 0;
+    const posHtml =
+      i === 0 ? `<span class="pos-badge pos-1">1</span>` :
+      i === 1 ? `<span class="pos-badge pos-2">2</span>` :
+      i === 2 ? `<span class="pos-badge pos-3">3</span>` :
+                `<span class="pos-n">${i+1}</span>`;
+    return `
+      <div class="comm-rank-row">
+        <div class="cell-pos" style="width:40px;flex-shrink:0">${posHtml}</div>
+        <div class="crr-info">
+          <div class="crr-name">
+            <span>${com.emoji}</span> ${com.nombre}
+          </div>
+          <div class="crr-bar-wrap">
+            <div class="crr-bar" style="width:${pct}%;background:${com.color}"></div>
+          </div>
+          <div class="crr-members">${com.members.length} misioneros</div>
+        </div>
+        <div class="crr-pts">
+          <span class="crr-n" style="color:${com.color}">${com.total}</span>
+          <span class="crr-u">pollos</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('commRanking').innerHTML = `
+    <p class="comm-section-title">Ranking por Comisión</p>
+    <div class="card" style="margin-bottom:14px">
+      <div class="topbar">
+        <div class="topbar-left">
+          <span class="tb-emoji">🏆</span>
+          <div>
+            <div class="tb-title">Tabla de comisiones</div>
+            <div class="tb-sub">Total de pollos vendidos por equipo</div>
+          </div>
+        </div>
+      </div>
+      ${rankRows}
+    </div>`;
+
+  // ── Cards individuales ──
+  const cardsHtml = comData.map(com => renderCommCard(com)).join('');
+  document.getElementById('commCards').innerHTML = `
+    <p class="comm-section-title">Detalle por comisión</p>
+    <div class="comm-grid">${cardsHtml}</div>`;
+}
+
+function renderCommCard(com) {
+  const rows = com.members.map((m, i) => {
+    const pos = i + 1;
+    const [bg, fg] = avatarColors(m.nombre);
+    const posHtml =
+      pos === 1 ? `<span class="pos-badge pos-1">1</span>` :
+      pos === 2 ? `<span class="pos-badge pos-2">2</span>` :
+      pos === 3 ? `<span class="pos-badge pos-3">3</span>` :
+                  `<span class="pos-n">${pos}</span>`;
+    const nameColor = m.pollos > 0 ? 'var(--txt)' : 'var(--txt-muted)';
+    return `
+      <div class="data-row z-none">
+        <div class="cell-pos">${posHtml}</div>
+        <div class="cell-player">
+          <div class="avatar" style="background:linear-gradient(150deg,${bg},${fg}60);border-color:${fg}28;opacity:${m.pollos===0?.5:1}">
+            ${initials(m.nombre)}
+          </div>
+          <div class="p-info">
+            <span class="p-name" style="color:${nameColor}" title="${m.nombre}">${escHtml(m.nombre)}</span>
+          </div>
+        </div>
+        <div class="cell-pts">
+          <span class="pts-n" style="color:${m.pollos > 0 ? com.color : 'var(--txt-muted)'}">${m.pollos}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="comm-card${com.full ? ' comm-card-full' : ''}">
+      <div class="comm-card-head" style="border-left-color:${com.color}">
+        <span class="comm-emoji">${com.emoji}</span>
+        <div>
+          <div class="comm-card-title" style="color:${com.color}">${com.nombre}</div>
+          <div class="comm-card-sub">${com.members.length} misioneros · ${com.total} 🐔 vendidos</div>
+        </div>
+      </div>
+      <div class="col-head">
+        <div class="ch ch-c">#</div>
+        <div class="ch" style="padding-left:8px">Jugador</div>
+        <div class="ch ch-r">🐔 Pts</div>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+/* ================================================================
    FETCH  (Vercel API proxy → sin CORS, funciona en producción)
 ================================================================ */
 async function fetchData() {
@@ -903,6 +1256,7 @@ async function loadData() {
       document.getElementById('tableBody').innerHTML = renderRows(players);
       document.getElementById('countPill').textContent = `${players.length} misionero${players.length !== 1 ? 's' : ''}`;
       document.getElementById('updateTxt').textContent  = `Actualizado: ${fmtTime(new Date())}`;
+      renderComisiones(players);
     }
 
   } catch (err) {
