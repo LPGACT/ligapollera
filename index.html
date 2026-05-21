@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tabla de Posiciones – Por Misionero</title>
+  <meta name="description" content="Ranking de pollos vendidos por misionero – actualización en vivo desde Google Sheets." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       TOKENS
+    ============================================================ */
+    :root {
+      --bg:           #07080d;
+      --bg-card:      #0c0e17;
+      --bg-topbar:    rgba(0,0,0,.25);
+      --bg-colhead:   rgba(0,0,0,.18);
+      --bg-sep:       rgba(0,0,0,.22);
+
+      --border:       rgba(255,255,255,.07);
+      --border-row:   rgba(255,255,255,.045);
+
+      --txt:          #e9ebf3;
+      --txt-sub:      #9198b0;
+      --txt-muted:    #474e67;
+
+      /* Zones */
+      --lib:          #22c55e;
+      --lib-dim:      rgba(34,197,94,.07);
+      --sud:          #3b82f6;
+      --sud-dim:      rgba(59,130,246,.07);
+      --rep:          #a855f7;
+      --rep-dim:      rgba(168,85,247,.08);
+      --desc:         #ef4444;
+      --desc-dim:     rgba(239,68,68,.08);
+
+      /* Medals */
+      --gold:         #f59e0b;
+      --silver:       #94a3b8;
+      --bronze:       #cd7f32;
+
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+    }
+
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -180px; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 520px;
+      background: radial-gradient(ellipse, rgba(34,197,94,.065) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px; right: -100px;
+      width: 500px; height: 400px;
+      background: radial-gradient(ellipse, rgba(59,130,246,.04) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       PAGE
+    ============================================================ */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 40px 20px 72px;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      animation: fadeDown .65s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.22);
+      color: var(--lib);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      padding: 5px 14px 5px 10px;
+      border-radius: 100px;
+      margin-bottom: 18px;
+    }
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--lib);
+      border-radius: 50%;
+      animation: blink 1.8s ease-in-out infinite;
+    }
+
+    .h-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(30px,6.5vw,54px);
+      font-weight: 900;
+      letter-spacing: -.5px;
+      line-height: 1.06;
+      text-transform: uppercase;
+    }
+    .h-title .accent {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .h-sub {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--txt-sub);
+      font-weight: 400;
+    }
+
+    .h-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .update-txt {
+      font-size: 11.5px;
+      color: var(--txt-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .update-txt svg { opacity: .5; }
+
+    .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.11);
+      color: var(--txt-sub);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 16px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s, transform .12s;
+      line-height: 1;
+    }
+    .refresh-btn:hover {
+      border-color: var(--lib);
+      color: var(--lib);
+      background: rgba(34,197,94,.05);
+    }
+    .refresh-btn:active { transform: scale(.96); }
+    .r-icon { transition: transform .5s ease; }
+    .refresh-btn.spinning .r-icon { animation: spin .7s linear infinite; }
+
+    /* ============================================================
+       CARD
+    ============================================================ */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.025),
+        0 28px 90px rgba(0,0,0,.65),
+        0 6px 24px rgba(0,0,0,.4);
+      animation: fadeUp .55s cubic-bezier(.22,1,.36,1) .1s both;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      background: var(--bg-topbar);
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tb-emoji { font-size: 26px; line-height: 1; }
+    .tb-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+    }
+    .tb-sub {
+      font-size: 10.5px;
+      color: var(--txt-muted);
+      margin-top: 1px;
+    }
+    .count-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--txt-muted);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* Column headers */
+    .col-head {
+      display: grid;
+      grid-template-columns: 58px minmax(0,1fr) 140px;
+      padding: 10px 22px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-colhead);
+    }
+    .ch {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--txt-muted);
+    }
+    .ch-c { text-align: center; }
+    .ch-r { text-align: right; }
+
+    /* ============================================================
+       ROWS
+    ============================================================ */
+    .data-row {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px minmax(0,1fr) 140px;
+      align-items: center;
+      min-height: 62px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--border-row);
+      transition: background .17s ease, transform .14s ease;
+      cursor: default;
+    }
+    .data-row:last-child { border-bottom: none; }
+
+    /* Left zone bar */
+    .data-row::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      transition: width .18s ease;
+    }
+    .data-row:hover { transform: translateX(2px); }
+    .data-row:hover::before { width: 4px; }
+
+    /* Zone variants */
+    .z-lib  { background: var(--lib-dim); }
+    .z-lib::before  { background: var(--lib); }
+    .z-sud  { background: var(--sud-dim); }
+    .z-sud::before  { background: var(--sud); }
+    .z-rep  { background: var(--rep-dim); }
+    .z-rep::before  { background: var(--rep); }
+    .z-desc { background: var(--desc-dim); }
+    .z-desc::before { background: var(--desc); }
+
+    .data-row:hover { background: rgba(255,255,255,.038) !important; }
+
+    /* Position cell */
+    .cell-pos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pos-n {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--txt-muted);
+      line-height: 1;
+      min-width: 24px;
+      text-align: center;
+    }
+    .pos-n.g { color: var(--gold); }
+    .pos-n.s { color: var(--silver); }
+    .pos-n.b { color: var(--bronze); }
+    .trophy  { font-size: 20px; line-height: 1; }
+
+    /* Player cell */
+    .cell-player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      min-width: 0;
+    }
+    .avatar {
+      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      color: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .p-info { min-width: 0; flex: 1; }
+    .p-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--txt);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: .1px;
+    }
+    .p-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 100px;
+    }
+    .b-lib  { background: rgba(34,197,94,.12);  color: var(--lib);  border: 1px solid rgba(34,197,94,.22); }
+    .b-sud  { background: rgba(59,130,246,.12);  color: var(--sud);  border: 1px solid rgba(59,130,246,.22); }
+    .b-rep  { background: rgba(168,85,247,.12);  color: var(--rep);  border: 1px solid rgba(168,85,247,.22); }
+    .b-desc { background: rgba(239,68,68,.12);   color: var(--desc); border: 1px solid rgba(239,68,68,.22); }
+
+    /* Points cell */
+    .cell-pts {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .z-icon { flex-shrink: 0; display: flex; align-items: center; }
+    .pts-wrap { text-align: right; }
+    .pts-n {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--txt);
+    }
+    .pts-u {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--txt-muted);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    /* ============================================================
+       ZONE SEPARATORS
+    ============================================================ */
+    .zone-sep {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 22px 6px 24px;
+      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      background: var(--bg-sep);
+    }
+    .sep-line { flex: 1; height: 1px; opacity: .22; }
+    .sep-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .sep-ico { display: flex; align-items: center; }
+
+    /* ============================================================
+       STATES: LOADING / ERROR / EMPTY
+    ============================================================ */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 70px 24px;
+      text-align: center;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--lib);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    .state-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .state-desc {
+      font-size: 13.5px;
+      color: var(--txt-sub);
+      max-width: 300px;
+      line-height: 1.65;
+    }
+    .retry-btn {
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.25);
+      color: var(--lib);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 22px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .retry-btn:hover { background: rgba(34,197,94,.18); }
+
+    /* ============================================================
+       LEGEND
+    ============================================================ */
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 10px;
+      margin-top: 20px;
+      animation: fadeIn .5s ease .5s both;
+    }
+    .leg-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color .2s;
+    }
+    .leg-card:hover { border-color: rgba(255,255,255,.12); }
+    .leg-bar { width: 3px; height: 34px; border-radius: 2px; flex-shrink: 0; }
+    .leg-body { min-width: 0; flex: 1; }
+    .leg-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      color: var(--txt);
+      margin-bottom: 2px;
+    }
+    .leg-range { font-size: 9.5px; color: var(--txt-muted); font-weight: 500; }
+    .leg-logo { width: 30px; height: 30px; flex-shrink: 0; object-fit: contain; }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .footer {
+      text-align: center;
+      margin-top: 26px;
+      font-size: 11.5px;
+      color: var(--txt-muted);
+      line-height: 1.6;
+      animation: fadeIn .5s ease .65s both;
+    }
+
+    /* ============================================================
+       ANIMATIONS
+    ============================================================ */
+    @keyframes fadeDown {
+      from { opacity:0; transform:translateY(-18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity:0; }
+      to   { opacity:1; }
+    }
+    @keyframes fadeInRow {
+      from { opacity:0; transform:translateX(-10px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+    @keyframes blink {
+      0%,100% { opacity:1; }
+      50%      { opacity:.3; }
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .data-row { animation: fadeInRow .38s cubic-bezier(.22,1,.36,1) both; }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width:700px) {
+      .page { padding:20px 12px 52px; }
+      .legend { grid-template-columns:repeat(2,1fr); }
+      .col-head, .data-row {
+        grid-template-columns: 46px minmax(0,1fr) 100px;
+        padding: 0 14px;
+      }
+      .p-badge { display:none; }
+      .zone-sep { padding:5px 14px 5px 16px; }
+    }
+    @media (max-width:440px) {
+      .col-head, .data-row {
+        grid-template-columns: 42px minmax(0,1fr) 86px;
+        padding: 0 12px;
+      }
+      .avatar { width:32px; height:32px; font-size:11px; }
+      .p-name  { font-size:13px; }
+      .pts-n   { font-size:21px; }
+      .pts-u   { display:none; }
+      .z-icon  { display:none; }
+      .legend  { gap:7px; }
+      .leg-card{ padding:10px 11px; gap:8px; }
+      .leg-logo{ width:24px; height:24px; object-fit:contain; }
+    }
+  </style>
+</head>
+<body>
+
+
+<div class="page">
+
+  <!-- ========== HEADER ========== -->
+  <header class="header">
+    <div class="live-pill">
+      <div class="live-dot"></div>
+      En vivo
+    </div>
+    <h1 class="h-title">Tabla de <span class="accent">Posiciones</span></h1>
+    <p class="h-sub">Ranking Misioneros · Pollos Vendidos 🐔</p>
+    <div class="h-actions">
+      <span class="update-txt" id="updateTxt">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="6" cy="6" r="5"/>
+          <path d="M6 3v3l2 1.5"/>
+        </svg>
+        Cargando datos...
+      </span>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+        <svg class="r-icon" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1.5 6.5A5 5 0 0 1 6.5 1.5a5 5 0 0 1 4.1 2.2"/>
+          <path d="M11.5 6.5A5 5 0 0 1 6.5 11.5a5 5 0 0 1-4.1-2.2"/>
+          <path d="M10 1.5l.6 2.2-2.2.6"/>
+          <path d="M3 11.5l-.6-2.2 2.2-.6"/>
+        </svg>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== CARD ========== -->
+  <div class="card" id="mainCard">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="tb-emoji">🐔</span>
+        <div>
+          <div class="tb-title">Por Misionero</div>
+          <div class="tb-sub">Tabla oficial · Temporada en curso</div>
+        </div>
+      </div>
+      <span class="count-pill" id="countPill">— misioneros</span>
+    </div>
+
+    <div class="col-head">
+      <div class="ch ch-c">#</div>
+      <div class="ch">Misionero</div>
+      <div class="ch ch-r">Pollos vendidos</div>
+    </div>
+
+    <div id="tableBody"></div>
+  </div>
+
+  <!-- ========== LEGEND ========== -->
+  <div class="legend">
+    <div class="leg-card">
+      <div class="leg-bar" style="background:var(--lib)"></div>
+      <div class="leg-body">
+        <div class="leg-name">Libertadores</div>
+        <div class="leg-range">Posiciones 1 – 7</div>
+      </div>
+      <img class="leg-logo" src="copa-libertadores-logo.png" alt="Copa Libertadores" />
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-bar" style="background:var(--sud)"></div>
+      <div class="leg-body">
+        <div class="leg-name">Sudamericana</div>
+        <div class="leg-range">Posiciones 8 – 12</div>
+      </div>
+      <img class="leg-logo" src="copa-sulamericana-logo-1.png" alt="Copa Sudamericana" />
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-bar" style="background:var(--rep)"></div>
+      <div class="leg-body">
+        <div class="leg-name">Repechaje</div>
+        <div class="leg-range">1 posición</div>
+      </div>
+      <svg class="leg-logo" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.5" stroke="var(--rep)" stroke-width="1.4"/>
+        <path d="M8 12h8M12 8.5l3.5 3.5-3.5 3.5" stroke="var(--rep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-bar" style="background:var(--desc)"></div>
+      <div class="leg-body">
+        <div class="leg-name">Descenso</div>
+        <div class="leg-range">Últimas 3 pos.</div>
+      </div>
+      <img class="leg-logo" src="mas alla (descenso).png" alt="Descenso" />
+    </div>
+  </div>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    Datos en tiempo real · Google Sheets &nbsp;·&nbsp; Auto-refresh cada 60&nbsp;s
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+/* ================================================================
+   CONFIG
+================================================================ */
+const SHEET_ID = '1wKq_ZD1WQllmrfQh63GX-T1w2BwOgXzO_mJGaBLZdwU';
+const GID      = '1690366586';
+const REFRESH_MS = 60_000;
+
+let refreshTimer = null;
+let isLoading    = false;
+
+/* ================================================================
+   AVATAR
+================================================================ */
+const PALETTES = [
+  ['#064e3b','#22c55e'],['#1e3a8a','#60a5fa'],['#7c2d12','#f97316'],
+  ['#4c1d95','#a78bfa'],['#881337','#fb7185'],['#134e4a','#2dd4bf'],
+  ['#713f12','#fcd34d'],['#1e1b4b','#818cf8'],['#1a2a1a','#86efac'],
+  ['#172554','#93c5fd'],
+];
+function avatarColors(name) {
+  const h = [...name].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return PALETTES[h % PALETTES.length];
+}
+function initials(name) {
+  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('') || '?';
+}
+
+/* ================================================================
+   ZONE LOGIC
+================================================================ */
+function zone(pos, total) {
+  if (pos <= 7)  return 'lib';
+  if (pos <= 12) return 'sud';
+  const descStart = total - 2;  // 3 positions from bottom (1-indexed)
+  const repPos    = total - 3;
+  if (repPos  > 12 && pos === repPos)  return 'rep';
+  if (descStart > 12 && pos >= descStart) return 'desc';
+  return 'none';
+}
+
+/* ================================================================
+   SVG ICONS
+================================================================ */
+function icoLib(sz=18) {
+  return `<img src="copa-libertadores-logo.png" width="${sz}" height="${sz}" style="object-fit:contain;vertical-align:middle;display:inline-block" alt="" />`;
+}
+function icoSud(sz=18) {
+  return `<img src="copa-sulamericana-logo-1.png" width="${sz}" height="${sz}" style="object-fit:contain;vertical-align:middle;display:inline-block" alt="" />`;
+}
+
+/* ================================================================
+   FORMAT
+================================================================ */
+function fmtNum(n) {
+  return Number(n).toLocaleString('es-AR');
+}
+function fmtTime(d) {
+  return d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+/* ================================================================
+   RENDER
+================================================================ */
+function renderRows(players) {
+  const total = players.length;
+  let html    = '';
+  let prevZ   = null;
+
+  players.forEach((p, i) => {
+    const pos = i + 1;
+    const z   = zone(pos, total);
+    const del = Math.min(i * 48, 700);
+
+    /* Zone separator on transition */
+    if (prevZ !== null && z !== prevZ) {
+      if (z === 'sud') {
+        html += sep('var(--sud)', 'Copa Sudamericana', icoSud(14));
+      } else if (z === 'rep') {
+        html += sep('var(--rep)', 'Repechaje', '⚔');
+      } else if (z === 'desc') {
+        html += sep('var(--desc)', 'Zona de Descenso', '↓');
+      }
+    }
+    prevZ = z;
+
+    /* Position display */
+    let posHtml;
+    if      (pos === 1) posHtml = `<span class="trophy">🥇</span>`;
+    else if (pos === 2) posHtml = `<span class="trophy">🥈</span>`;
+    else if (pos === 3) posHtml = `<span class="trophy">🥉</span>`;
+    else                posHtml = `<span class="pos-n">${pos}</span>`;
+
+    /* Badge */
+    const badgeMap = {
+      lib:  `<span class="p-badge b-lib">${icoLib(10)} Libertadores</span>`,
+      sud:  `<span class="p-badge b-sud">${icoSud(10)} Sudamericana</span>`,
+      rep:  `<span class="p-badge b-rep">⚔ Repechaje</span>`,
+      desc: `<span class="p-badge b-desc">↓ Descenso</span>`,
+    };
+    const badgeHtml = badgeMap[z] || '';
+
+    /* Right zone icon */
+    const rightIco = z === 'lib'
+      ? `<span class="z-icon">${icoLib(20)}</span>`
+      : z === 'sud'
+      ? `<span class="z-icon">${icoSud(20)}</span>`
+      : '';
+
+    const [bg, fg] = avatarColors(p.nombre);
+
+    html += `
+      <div class="data-row z-${z}" style="animation-delay:${del}ms" role="row" aria-label="${p.nombre} – ${p.pollos} pollos">
+        <div class="cell-pos">${posHtml}</div>
+        <div class="cell-player">
+          <div class="avatar" style="background:linear-gradient(135deg,${bg} 0%,${fg}30 100%);border-color:${fg}22;">
+            ${initials(p.nombre)}
+          </div>
+          <div class="p-info">
+            <div class="p-name" title="${p.nombre}">${escHtml(p.nombre)}</div>
+            ${badgeHtml}
+          </div>
+        </div>
+        <div class="cell-pts">
+          ${rightIco}
+          <div class="pts-wrap">
+            <span class="pts-n">${fmtNum(p.pollos)}</span>
+            <span class="pts-u">pollos</span>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  return html;
+}
+
+function sep(color, label, iconHtml) {
+  const isText = typeof iconHtml === 'string' && !iconHtml.startsWith('<');
+  return `
+    <div class="zone-sep">
+      <div class="sep-line" style="background:${color}"></div>
+      ${isText
+        ? `<span class="sep-ico" style="font-size:13px;line-height:1">${iconHtml}</span>`
+        : `<span class="sep-ico">${iconHtml}</span>`
+      }
+      <span class="sep-label" style="color:${color}">${label}</span>
+      <div class="sep-line" style="background:${color}"></div>
+    </div>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ================================================================
+   STATES
+================================================================ */
+function showLoading() {
+  document.getElementById('tableBody').innerHTML = `
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-title">Cargando datos</div>
+      <p class="state-desc">Conectando con Google Sheets…</p>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById('tableBody').innerHTML = `
+    <div class="state-box">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.4" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4m0 4h.01"/>
+      </svg>
+      <div class="state-title">No se pudo cargar</div>
+      <p class="state-desc">${escHtml(msg)}</p>
+      <button class="retry-btn" onclick="loadData()">Reintentar</button>
+    </div>`;
+}
+
+function showEmpty() {
+  document.getElementById('tableBody').innerHTML = `
+    <div class="state-box">
+      <span style="font-size:40px">🐔</span>
+      <div class="state-title">Sin datos</div>
+      <p class="state-desc">No se encontraron misioneros en la hoja "Por Misionero".</p>
+    </div>`;
+}
+
+/* ================================================================
+   FETCH  (JSONP — funciona desde file:// sin servidor local)
+================================================================ */
+function fetchData() {
+  return new Promise((resolve, reject) => {
+    const cbName = '__gviz_' + Date.now();
+    const script = document.createElement('script');
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tiempo de espera agotado. Verificá tu conexión a internet.'));
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      script.remove();
+    }
+
+    window[cbName] = function(json) {
+      cleanup();
+      try {
+        if (json.status !== 'ok') {
+          reject(new Error(json.errors?.[0]?.detailed_message || json.errors?.[0]?.message || 'Error desconocido'));
+          return;
+        }
+        const HEADER_RE = /^(nombre|misionero|jugador|pollos|cant|columna|a|b)$/i;
+        const players = (json.table?.rows || [])
+          .map(row => ({
+            nombre: String(row.c?.[0]?.v ?? '').trim(),
+            pollos: (row.c?.[1]?.v != null) ? Number(row.c[1].v) : 0,
+          }))
+          .filter(p => p.nombre && !HEADER_RE.test(p.nombre) && !isNaN(p.pollos))
+          .sort((a, b) => b.pollos - a.pollos);
+
+        players.length === 0
+          ? reject(new Error('No se encontraron datos en la hoja "Por Misionero"'))
+          : resolve(players);
+      } catch(e) { reject(e); }
+    };
+
+    script.onerror = () => { cleanup(); reject(new Error('Error de red. Verificá tu conexión a internet.')); };
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=reqId:0;handler:${cbName}&gid=${GID}`;
+    document.head.appendChild(script);
+  });
+}
+
+/* ================================================================
+   MAIN LOAD
+================================================================ */
+async function loadData() {
+  if (isLoading) return;
+  isLoading = true;
+
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+
+  showLoading();
+
+  try {
+    const players = await fetchData();
+
+    if (players.length === 0) {
+      showEmpty();
+      document.getElementById('countPill').textContent = '0 misioneros';
+      document.getElementById('updateTxt').textContent  = `Actualizado: ${fmtTime(new Date())}`;
+    } else {
+      document.getElementById('tableBody').innerHTML = renderRows(players);
+      document.getElementById('countPill').textContent = `${players.length} misionero${players.length !== 1 ? 's' : ''}`;
+      document.getElementById('updateTxt').textContent  = `Actualizado: ${fmtTime(new Date())}`;
+    }
+
+  } catch (err) {
+    console.error('[Leadboard]', err);
+    const isNet = /failed to fetch|networkerror|load failed/i.test(err.message);
+    showError(
+      isNet
+        ? 'Error de red. Verificá tu conexión y que la hoja de Google Sheets sea pública.'
+        : err.message
+    );
+    document.getElementById('updateTxt').textContent = 'Error al cargar – reintentando en 60 s';
+  } finally {
+    isLoading = false;
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(loadData, REFRESH_MS);
+  }
+}
+
+/* ================================================================
+   BOOT
+================================================================ */
+loadData();
+</script>
+</body>
+</html>
