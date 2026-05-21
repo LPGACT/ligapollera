@@ -672,8 +672,6 @@
 /* ================================================================
    CONFIG
 ================================================================ */
-const SHEET_ID = '1wKq_ZD1WQllmrfQh63GX-T1w2BwOgXzO_mJGaBLZdwU';
-const GID      = '1690366586';
 const REFRESH_MS = 60_000;
 
 let refreshTimer = null;
@@ -857,50 +855,27 @@ function showEmpty() {
 }
 
 /* ================================================================
-   FETCH  (JSONP — funciona desde file:// sin servidor local)
+   FETCH  (Vercel API proxy → sin CORS, funciona en producción)
 ================================================================ */
-function fetchData() {
-  return new Promise((resolve, reject) => {
-    const cbName = '__gviz_' + Date.now();
-    const script = document.createElement('script');
+async function fetchData() {
+  const res = await fetch('/api/data');
+  if (!res.ok) throw new Error(`Error HTTP ${res.status} al obtener datos`);
 
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('Tiempo de espera agotado. Verificá tu conexión a internet.'));
-    }, 12000);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  if (json.status !== 'ok') throw new Error(json.errors?.[0]?.message || 'Error de Google Sheets');
 
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[cbName];
-      script.remove();
-    }
+  const HEADER_RE = /^(nombre|misionero|jugador|pollos|cant|columna|a|b)$/i;
+  const players = (json.table?.rows || [])
+    .map(row => ({
+      nombre: String(row.c?.[0]?.v ?? '').trim(),
+      pollos: (row.c?.[1]?.v != null) ? Number(row.c[1].v) : 0,
+    }))
+    .filter(p => p.nombre && !HEADER_RE.test(p.nombre) && !isNaN(p.pollos))
+    .sort((a, b) => b.pollos - a.pollos);
 
-    window[cbName] = function(json) {
-      cleanup();
-      try {
-        if (json.status !== 'ok') {
-          reject(new Error(json.errors?.[0]?.detailed_message || json.errors?.[0]?.message || 'Error desconocido'));
-          return;
-        }
-        const HEADER_RE = /^(nombre|misionero|jugador|pollos|cant|columna|a|b)$/i;
-        const players = (json.table?.rows || [])
-          .map(row => ({
-            nombre: String(row.c?.[0]?.v ?? '').trim(),
-            pollos: (row.c?.[1]?.v != null) ? Number(row.c[1].v) : 0,
-          }))
-          .filter(p => p.nombre && !HEADER_RE.test(p.nombre) && !isNaN(p.pollos))
-          .sort((a, b) => b.pollos - a.pollos);
-
-        players.length === 0
-          ? reject(new Error('No se encontraron datos en la hoja "Por Misionero"'))
-          : resolve(players);
-      } catch(e) { reject(e); }
-    };
-
-    script.onerror = () => { cleanup(); reject(new Error('Error de red. Verificá tu conexión a internet.')); };
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=reqId:0;handler:${cbName}&gid=${GID}`;
-    document.head.appendChild(script);
-  });
+  if (players.length === 0) throw new Error('No se encontraron datos en la hoja "Por Misionero"');
+  return players;
 }
 
 /* ================================================================
