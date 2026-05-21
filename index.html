@@ -1102,21 +1102,25 @@ function renderComisiones(players) {
   const pMap = new Map();
   for (const p of players) pMap.set(normalize(p.nombre), p);
 
-  // Construir datos de cada comisión con totales
+  // Construir datos de cada comisión con totales y promedio
   const comData = COMISIONES.map(com => {
     const members = com.miembros.map(nombre => {
       const match = pMap.get(normalize(nombre));
       return { nombre, pollos: match ? match.pollos : 0 };
     }).sort((a, b) => b.pollos - a.pollos);
-    const total = members.reduce((s, m) => s + m.pollos, 0);
-    return { ...com, members, total };
-  }).sort((a, b) => b.total - a.total);
+    const total    = members.reduce((s, m) => s + m.pollos, 0);
+    const promedio = total / members.length;
+    return { ...com, members, total, promedio };
+  }).sort((a, b) => b.promedio - a.promedio);  // ← orden por promedio
 
-  const maxTotal = comData[0]?.total || 1;
+  const maxProm = comData[0]?.promedio || 1;
 
   // ── Ranking de comisiones ──
   const rankRows = comData.map((com, i) => {
-    const pct = maxTotal > 0 ? Math.round((com.total / maxTotal) * 100) : 0;
+    const pct = maxProm > 0 ? Math.round((com.promedio / maxProm) * 100) : 0;
+    const promFmt = com.promedio % 1 === 0
+      ? com.promedio.toFixed(0)
+      : com.promedio.toFixed(2);
     const posHtml =
       i === 0 ? `<span class="pos-badge pos-1">1</span>` :
       i === 1 ? `<span class="pos-badge pos-2">2</span>` :
@@ -1126,17 +1130,15 @@ function renderComisiones(players) {
       <div class="comm-rank-row">
         <div class="cell-pos" style="width:40px;flex-shrink:0">${posHtml}</div>
         <div class="crr-info">
-          <div class="crr-name">
-            <span>${com.emoji}</span> ${com.nombre}
-          </div>
+          <div class="crr-name"><span>${com.emoji}</span> ${com.nombre}</div>
           <div class="crr-bar-wrap">
             <div class="crr-bar" style="width:${pct}%;background:${com.color}"></div>
           </div>
-          <div class="crr-members">${com.members.length} misioneros</div>
+          <div class="crr-members">${com.members.length} integrantes · ${com.total} 🐔 en total</div>
         </div>
         <div class="crr-pts">
-          <span class="crr-n" style="color:${com.color}">${com.total}</span>
-          <span class="crr-u">pollos</span>
+          <span class="crr-n" style="color:${com.color}">${promFmt}</span>
+          <span class="crr-u">prom. / persona</span>
         </div>
       </div>`;
   }).join('');
@@ -1149,7 +1151,7 @@ function renderComisiones(players) {
           <span class="tb-emoji">🏆</span>
           <div>
             <div class="tb-title">Tabla de comisiones</div>
-            <div class="tb-sub">Total de pollos vendidos por equipo</div>
+            <div class="tb-sub">Promedio de pollos por integrante</div>
           </div>
         </div>
       </div>
